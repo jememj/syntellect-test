@@ -1,0 +1,13 @@
+.autocomplete__suggestion-flag {
+  width: 40px;
+  margin-right: 10px;
+}
+
+.autocomplete__suggestion-name {
+  font-weight: bold;
+}
+
+.autocomplete__suggestion-fullname {
+  font-size: 12px;
+  color: #666;
+}
