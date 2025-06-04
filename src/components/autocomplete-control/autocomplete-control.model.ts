@@ -10,6 +10,7 @@ export class AutocompleteControlViewModel implements IAutocompleteViewModel {
   private _suggestions: SuggestionItem[] = [];
   private _error: string | null = null;
   private _maxSuggestions: number;
+  private _abortController: AbortController | null = null;
 
   constructor({ maxSuggestions }: AutocompleteViewModelParams) {
     makeAutoObservable(this);
@@ -29,20 +30,30 @@ export class AutocompleteControlViewModel implements IAutocompleteViewModel {
       return;
     }
 
+    if (this._abortController) {
+      this._abortController.abort();
+    }
+
+    const controller = new AbortController();
+    this._abortController = controller;
+
     try {
       this._error = null;
 
-      const data: SuggestionItem[] = yield getCountryByName(this.inputValue);
+      const data: SuggestionItem[] = yield getCountryByName(this.inputValue, controller.signal);
 
-      const uniqueSuggestions = data.reduce((acc: SuggestionItem[], current) => {
-        if (!acc.some((item) => item.name === current.name)) {
-          acc.push(current);
-        }
-        return acc;
-      }, []);
+      if (!controller.signal.aborted) {
+        const uniqueSuggestions = data.reduce((acc: SuggestionItem[], current) => {
+          if (!acc.some((item) => item.name === current.name)) {
+            acc.push(current);
+          }
+          return acc;
+        }, []);
 
-      this._suggestions = uniqueSuggestions.slice(0, this._maxSuggestions);
+        this._suggestions = uniqueSuggestions.slice(0, this._maxSuggestions);
+      }
     } catch (err) {
+      if (controller.signal.aborted) return;
       this._error = "Ошибка";
     }
   });
