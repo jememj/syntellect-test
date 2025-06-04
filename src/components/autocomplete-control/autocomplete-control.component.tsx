@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { observer } from "mobx-react";
 
 import { AutocompleteControlViewModel } from "./autocomplete-control.model";
 import { SuggestionItemComponent } from "./suggestion-item/suggestion-item.component";
+import { debounce } from "../../shared/utils/debounce";
 
 import styles from "./autocomplete-control.module.css";
 
@@ -42,8 +43,16 @@ export const AutocompleteControlComponent = observer(({ model }: AutocompleteCon
     setIsFocused(false);
   };
 
+  const debouncedFetchSuggestions = useCallback(
+    debounce(() => {
+      model.fetchSuggestions();
+    }, 300),
+    [model]
+  );
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     model.setValue(e.target.value);
+    debouncedFetchSuggestions();
   };
 
   const handleInputFocus = () => {

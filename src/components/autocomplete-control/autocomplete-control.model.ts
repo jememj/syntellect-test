@@ -19,7 +19,6 @@ export class AutocompleteControlViewModel implements IAutocompleteViewModel {
   public setValue = (newValue: string) => {
     this._inputValue = newValue;
     if (this._selectedSuggestion) this._selectedSuggestion = null;
-    this.fetchSuggestions();
   };
 
   public fetchSuggestions = flow(function* (this: AutocompleteControlViewModel) {
